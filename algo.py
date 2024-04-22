@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 from PyQt5 import QtWidgets, uic, QtGui
+from PyQt5.QtWidgets import QMessageBox
 
 class Patient:
 
@@ -15,6 +16,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('Gui.ui', self)
         self.setWindowTitle("Personalized Exercise Prescription")
         self.clearButton.clicked.connect(self.clearbutton)
+        self.calcButton.clicked.connect(self.display_exercise_plan)
         self.PateintInfo = None
 
     def clearbutton(self):
@@ -53,37 +55,53 @@ class MainWindow(QtWidgets.QMainWindow):
             calories_to_burn = (self.PateintInfo.weight - recommended_weight) * 7700 
             return calories_to_burn
         
-    def max_calories_exercise(self):
-        if self.PateintInfo is not None:
-            total_calories_to_burn = int(self.calculate_calories_to_burn())
-            calories_per_minute = self.calculate_calories_per_minute()
-            exercises = [
-                {"name": "Walking", "calories_per_minute": 5}, # 5 calories per minute
-                {"name": "Jogging", "calories_per_minute": 10}, # 10 calories per minute
-                {"name": "Cycling", "calories_per_minute": 8},  # 8 calories per minute
-                {"name": "Swimming", "calories_per_minute": 12} # 12 calories per minute
-            ]
+    def exercise_dataset(self):
+        return {
+            'Running': 10,  # calories per minute
+            'Swimming': 8,
+            'Cycling': 7,
+            'Walking': 5
+        }
 
-            # Initialize a list to store the maximum calories for each total calories to burn
-            max_calories = [0] * (total_calories_to_burn + 1)
-            exercise_sequence = [[] for _ in range(total_calories_to_burn + 1)]
+    def get_exercise_plan(self, exercise_dataset):
+        total_calories_to_burn = self.calculate_calories_to_burn()
+        calories_burn_rate = self.calculate_calories_per_minute()
 
-            # Iterate through each total calories to burn
-            for i in range(1, total_calories_to_burn + 1):
-                # Initialize the maximum calories for this total calories to burn as calories_per_minute
-                max_calories[i] = calories_per_minute
+        # Initialize DP table
+        dp = [0] + [float('inf')] * int(total_calories_to_burn)
 
-                # Check if splitting the total calories to burn and using the maximum calories from previous durations is more beneficial
-                for j in range(1, i):
-                    if max_calories[i] < max_calories[j] + max_calories[i - j]:
-                        max_calories[i] = max_calories[j] + max_calories[i - j]
-                        exercise_sequence[i] = exercise_sequence[j] + exercise_sequence[i - j]
+        # List to store the exercises for each calorie count
+        exercises = [''] + [''] * int(total_calories_to_burn)
 
-                exercise_sequence[i].append(calories_per_minute)
+        for exercise, calories_per_min in exercise_dataset.items():
+            for i in range(calories_per_min, int(total_calories_to_burn) + 1):
+                if dp[i - calories_per_min] + 1 < dp[i]:
+                    dp[i] = dp[i - calories_per_min] + 1
+                    exercises[i] = exercises[i - calories_per_min] + ', ' + exercise if exercises[i - calories_per_min] else exercise
 
-            # Return the exercise sequence needed to burn the total calories
-            return exercise_sequence[total_calories_to_burn]
+        # Calculate time for each exercise
+        exercise_plan = {}
+        for exercise in exercises[-1].split(', '):
+            if exercise not in exercise_plan:
+                exercise_plan[exercise] = 1 / (exercise_dataset[exercise] / calories_burn_rate)
+            else:
+                exercise_plan[exercise] += 1 / (exercise_dataset[exercise] / calories_burn_rate)
 
+        return exercise_plan
+    
+    def display_exercise_plan(self):
+        self.setPatientData()
+        exercise_dataset = self.exercise_dataset()
+        exercise_plan = self.get_exercise_plan(exercise_dataset)
+
+        message = "Exercise Plan:\n"
+        for exercise, time in exercise_plan.items():
+            message += f"{exercise}: {time} minutes\n"
+
+        msg = QMessageBox()
+        msg.setWindowTitle("Exercise Plan")
+        msg.setText(message)
+        msg.exec_()
 
 
 if __name__ == '__main__':

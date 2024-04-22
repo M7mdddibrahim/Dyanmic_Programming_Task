@@ -231,7 +231,7 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item alignment="Qt::AlignHCenter">
-           <widget class="QPushButton" name="clearButton_2">
+           <widget class="QPushButton" name="calcButton">
             <property name="minimumSize">
              <size>
               <width>120</width>
