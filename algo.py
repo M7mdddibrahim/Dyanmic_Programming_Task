@@ -1,10 +1,10 @@
 import sys
-import pandas as pd
-from PyQt5 import QtWidgets, uic, QtGui
+from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox
 from itertools import groupby
 
 Activity = None
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -13,7 +13,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.clearButton.clicked.connect(self.clearbutton)
         self.calcButton.clicked.connect(self.design_exercise_plan)
         self.PateintInfo = None
-
 
     def clearbutton(self):
         self.lineEdit.clear()
@@ -38,11 +37,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             return None
     
-    # def calculate_calories_per_minute(self):
-    #     if self.lineEdit and self.lineEdit_2 and self.get_met_value is not None :
-    #         return self.get_met_value * 3.5 * self.lineEdit / 200
-    #     else: 
-    #         QtWidgets.QMessageBox.information(self, 'Failed', 'Please fill data correctly .')
     def calculate_calories_per_minute(self):
         weight_in_kg = int(self.lineEdit.text())
         height_in_meters = int(self.lineEdit_2.text())
@@ -54,18 +48,11 @@ class MainWindow(QtWidgets.QMainWindow):
         else: 
             QtWidgets.QMessageBox.information(self, 'Failed', 'Please fill data correctly .')
 
-        
     def calculate_recommended_weight(self):
-        # if self.PateintInfo is not None:
         if self.lineEdit and self.lineEdit_2 and self.get_met_value:
             recommended_weight=    24*((float(self.lineEdit_2.text())/100)**2)
             return recommended_weight
         
-    # def calculate_calories_to_burn(self):
-    #     if self.PateintInfo is not None:
-    #         recommended_weight = self.calculate_recommended_weight()
-    #         calories_to_burn = (self.PateintInfo.weight - recommended_weight) * 7700 
-    #         return calories_to_burn
     def calculate_calories_to_burn(self):
         current_weight = int(self.lineEdit.text())
         recommended_weight = self.calculate_recommended_weight()
@@ -73,7 +60,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if current_weight and recommended_weight:
             weight_difference =  current_weight-recommended_weight
             calories_to_burn = weight_difference * 7700
-            # self.design_exercise_plan()
             return calories_to_burn
         else:
             QtWidgets.QMessageBox.information(self, 'Failed', 'Please fill data correctly .')
@@ -81,45 +67,39 @@ class MainWindow(QtWidgets.QMainWindow):
     def design_exercise_plan(self):
         total_calories_to_burn = int(self.calculate_calories_to_burn())
         exercises = self.exercise_dataset()
-
-        # Initialize a list to store the maximum calories for each total calories to burn
+        # cpm=self.calculate_calories_per_minute()
         max_calories = [0] * (total_calories_to_burn + 1)
         exercise_sequence = [None] * (total_calories_to_burn + 1)
 
-        # Iterate through each total calories to burn
         for i in range(1, total_calories_to_burn + 1):
-            # Check if using each exercise is more beneficial
             for exercise, calories_per_minute in exercises.items():
                 if i >= calories_per_minute:
                     if max_calories[i] < max_calories[i - calories_per_minute] + calories_per_minute:
                         max_calories[i] = max_calories[i - calories_per_minute] + calories_per_minute
                         exercise_sequence[i] = exercise
-
-        # Build the exercise plan by tracing back the exercise sequence
+        print(exercise_sequence)
         exercise_plan = []
-        i = total_calories_to_burn
-        while i > 0:
-            exercise_plan.append(exercise_sequence[i])
-            i -= exercises[exercise_sequence[i]]
+        # Count repetitions of each exercise in the exercise sequence
+        repetitions = {exercise: exercise_sequence.count(exercise) for exercise in set(exercise_sequence)}
 
-        # Convert the exercise plan from a list of exercises to a list of (exercise, duration) tuples
-        exercise_plan = [(exercise, len(list(group))) for exercise, group in groupby(exercise_plan)]
+        for exercise, count in repetitions.items():
+            if count > 0 and exercise is not None:
+                exercise_plan.append((exercise, count))
 
-        # Return the exercise plan
-        print(exercise_plan)
+        
+
+        exercise_plan_str = "\n".join([f"{exercise}: {duration} minutes" for exercise, duration in exercise_plan])
+
+        QMessageBox.information(self, "Exercise Plan", exercise_plan_str, QMessageBox.Ok)
         return exercise_plan
     
-
-
     def exercise_dataset(self):
         return {
-            'Running': 10,  # calories per minute
-            'Swimming': 8,
-            'Cycling': 7,
-            'Walking': 5
+            'Running': 5,  # calories per minute
+            'Swimming': 3,
+            'Cycling': 2,
+            'Walking': 1
         }
-
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
