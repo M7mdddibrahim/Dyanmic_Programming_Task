@@ -58,7 +58,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def calculate_recommended_weight(self):
         # if self.PateintInfo is not None:
         if self.lineEdit and self.lineEdit_2 and self.get_met_value:
-            recommended_weight = 22.5 * (int(self.lineEdit_2.text())**2)
+            recommended_weight=    24*((float(self.lineEdit_2.text())/100)**2)
             return recommended_weight
         
     # def calculate_calories_to_burn(self):
@@ -71,8 +71,9 @@ class MainWindow(QtWidgets.QMainWindow):
         recommended_weight = self.calculate_recommended_weight()
 
         if current_weight and recommended_weight:
-            weight_difference = current_weight - recommended_weight
+            weight_difference =  current_weight-recommended_weight
             calories_to_burn = weight_difference * 7700
+            # self.design_exercise_plan()
             return calories_to_burn
         else:
             QtWidgets.QMessageBox.information(self, 'Failed', 'Please fill data correctly .')
