@@ -77,7 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     if max_calories[i] < max_calories[i - calories_per_minute] + calories_per_minute:
                         max_calories[i] = max_calories[i - calories_per_minute] + calories_per_minute
                         exercise_sequence[i] = exercise
-        print(exercise_sequence)
+        # print(exercise_sequence)
         exercise_plan = []
         # Count repetitions of each exercise in the exercise sequence
         repetitions = {exercise: exercise_sequence.count(exercise) for exercise in set(exercise_sequence)}
@@ -86,12 +86,14 @@ class MainWindow(QtWidgets.QMainWindow):
             if count > 0 and exercise is not None:
                 exercise_plan.append((exercise, count))
 
-        
-
         exercise_plan_str = "\n".join([f"{exercise}: {duration} minutes" for exercise, duration in exercise_plan])
 
-        QMessageBox.information(self, "Exercise Plan", exercise_plan_str, QMessageBox.Ok)
-        return exercise_plan
+        if not exercise_plan:
+            QMessageBox.information(self, "Exercise Plan", "No exercise plan as you do not need to burn the required calories.", QMessageBox.Ok)
+            return None
+        else:
+            QMessageBox.information(self, "Exercise Plan", exercise_plan_str, QMessageBox.Ok)
+            return exercise_plan
     
     def exercise_dataset(self):
         return {
