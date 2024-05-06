@@ -68,14 +68,14 @@ class MainWindow(QtWidgets.QMainWindow):
         total_calories_to_burn = int(self.calculate_calories_to_burn())
         exercises = self.exercise_dataset()
         # cpm=self.calculate_calories_per_minute()
-        max_calories = [0] * (total_calories_to_burn + 1)
-        exercise_sequence = [None] * (total_calories_to_burn + 1)
+        max_calories = [0] * (total_calories_to_burn + 1) #array 1
+        exercise_sequence = [None] * (total_calories_to_burn + 1) #array 2 (columns men 0 l7d TCTB)
 
-        for i in range(1, total_calories_to_burn + 1):
-            for exercise, calories_per_minute in exercises.items():
+        for i in range(1, total_calories_to_burn + 1): #loop 3ala TCTB
+            for exercise, calories_per_minute in exercises.items(): #loop 3ala kol exercise
                 if i >= calories_per_minute:
-                    if max_calories[i] < max_calories[i - calories_per_minute] + calories_per_minute:
-                        max_calories[i] = max_calories[i - calories_per_minute] + calories_per_minute
+                    if max_calories[i] < max_calories[i - calories_per_minute] + calories_per_minute: #bshof law caloorise per min bta3t el col akbr men el cal per min bta3t el ex 3lashan a3rf a minus 
+                        max_calories[i] = max_calories[i - calories_per_minute] + calories_per_minute #law ah bcompare bel 3ndi wa el current bta3 el ex el gdyd
                         exercise_sequence[i] = exercise
         # print(exercise_sequence)
         exercise_plan = []
